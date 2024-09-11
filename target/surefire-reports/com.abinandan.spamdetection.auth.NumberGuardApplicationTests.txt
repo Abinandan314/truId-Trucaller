@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.abinandan.spamdetection.auth.NumberGuardApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.813 s -- in com.abinandan.spamdetection.auth.NumberGuardApplicationTests

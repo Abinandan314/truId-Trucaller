@@ -1,0 +1,424 @@
+{
+	"info": {
+		"_postman_id": "afe4679d-0ce1-44e3-a83a-3997e3cd9423",
+		"name": "TruID - Spam Detection and Call Directory",
+		"description": "Design and Important Attributes:\n\n**User Table:**\n\n1. Attributes:\n    \n    1. id (Primary Key) : Auto generated\n        \n    2. name : Name of the user\n        \n    3. phoneNumber (UniqueKey) : Phone number of the user\n        \n    4. password : Encrypted\n        \n    5. email : Email of the User (Optional)\n        \n2. Usage:\n    \n    1. This table helps in registering new users into the application\n        \n    2. **Helps Authenticating all the APIs, except for auth related apis**\n        \n\n**Global Contacts Table:**\n\nDescription: This table contains personal contacts of the all the users who have registered for the application. This can have Duplicated Data. Person 'A' and 'B' can have same person's mobile number, but they may be saved it in a different way.\n\n1. Attributes:\n    \n    1. id (Primary Key) : Auto generated\n        \n    2. name : Name of the user\n        \n    3. phoneNumber (UniqueKey) : Phone number of the user\n        \n    4. email : Email of the User\n        \n    5. createdAt/updatedAt- time of creation and updation\n        \n    6. spamStatus: Current Spam Status of the number\n        \n        1. N - Not a Spam\n            \n        2. L - Low probability of a Spam\n            \n        3. M - Medium probility of a Spam\n            \n        4. H - High probability of a Spam\n            \n2. Usage:\n    \n    1. Used to perform Search Queries by Phone Number and Name.\n        \n\n**Spam Table:**\n\nDescription: This Table contains details like spam count, spam status and the respective phone number\n\n1. Attributes:\n    \n    1. id (Primary Key) : Auto generated\n        \n    2. phoneNumber (UniqueKey) : Phone number of the user\n        \n    3. createdAt/updatedAt- time of creation and updation\n        \n    4. spamStatus: Current Spam Status of the number\n        \n        1. N - Not a Spam\n            \n        2. L - Low probability of a Spam\n            \n        3. M - Medium probility of a Spam\n            \n        4. H - High probability of a Spam\n            \n    5. recordCount: Records counts of how people have reported on that number\n        \n        1. Range 0 - 10 Spam Status : N\n            \n        2. Range 10 - 24 Spam Status : L (Low)\n            \n        3. Range 25 - 50 Spam Status : M (Medium)\n            \n        4. Range 50+ Spam Status : H (High)\n            \n2. Usage:\n    \n    1. Helps in updating the spam recorded count\n        \n    2. Helps in keeping Global Contact List In Sync with spam status\n        \n\n**API DESCRIPTION**\n\n1. Register New User - Creates New User, responds with jwt token\n    \n2. Login - Validates Provided UserName (Phone Number) and Password, responds with jwt Token\n    \n3. Search Contact - Paginated API:\n    \n    1. By Phone Number:\n        \n        1. Unregistered Numbers: Provides List of duplicated names, since multiple people might have stored the same number in multiple ways. If asked for Unregistered phone number, provides list of all available contacts with their names\n            \n        2. Registered Number(i.e : Available in User table) : Provides the Registered Number and its details\n            \n    2. By Name: Provides Search Results with Matching Strings, sorts the result by matching criteria i.e : Results first shows people whose names start with the search query, and then people whose names contain but don’t start with the search query.\n        \n4. Report Spam: Updates the spam table\n    \n    1. New Spam Entry: Validates Phone Number in Global Contact table and creates new entry in Spam table\n        \n    2. Exisiting Entry: Checks for spam recordCount, if it reaches the threshold, Updates the Spam Details in Spam Table as well as in Global Contact Table",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17844086"
+	},
+	"item": [
+		{
+			"name": "Register New User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Save API Key\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.environment.set(\"apiKey\", jsonData.token); // Assuming the key is named `apiKey` in the response\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"firstName\":\"newUser\",\r\n    \"lastName\":\"1\",\r\n    \"email\":\"newuser-1@mail.com\",\r\n    \"password\":\"password\",\r\n    \"phoneNumber\" : \"9876012345\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/v1/auth/register",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login as NewUser",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Save API Key\", function () {\r",
+							"    var jsonData = pm.response.json();\r",
+							"    pm.environment.set(\"apiKey\", jsonData.token); // Assuming the key is named `apiKey` in the response\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"phoneNumber\":\"9876012345\",\r\n    \"password\":\"password\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/v1/auth/authenticate",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"auth",
+						"authenticate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Global Contacts By Name",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{apiKey}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/v1/contact/search?name=J",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"contact",
+						"search"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "J"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Global Contacts By UnRegistered Phone",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{apiKey}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/v1/contact/search?phoneNumber=1234567890",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"contact",
+						"search"
+					],
+					"query": [
+						{
+							"key": "phoneNumber",
+							"value": "1234567890"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Global Contacts By Registered Phone",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{apiKey}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/v1/contact/search?phoneNumber=7776663331",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"contact",
+						"search"
+					],
+					"query": [
+						{
+							"key": "phoneNumber",
+							"value": "7776663331"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search Wilson Before Report - Spam Status = L",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{apiKey}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/v1/contact/search?name=w",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"contact",
+						"search"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "w"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Report Spam",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{apiKey}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"phoneNumber\" :\"5678901234\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/v1/spam",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"spam"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Search Wilson After Report - Spam Status = M",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{apiKey}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/v1/contact/search?name=w",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"contact",
+						"search"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "w"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Contact - Test API",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{apiKey}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"name\" : \"Howe\",\r\n   \"phoneNumber\" : \"6712345890\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/api/v1/contact",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v1",
+						"contact"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

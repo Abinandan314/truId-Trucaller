@@ -1,0 +1,140 @@
+# Spam Detection And Telephone Directory Application
+
+## Overview
+The application is a backend service that mimics the functionality of Truecaller, allowing users to register, log in, and search a global contact database and report spam callers. The primary features include user authentication using JWT tokens, managing a global contacts database, and handling API requests related to contact information.
+
+## Tech Stack
+
+1) Java
+2) Spring Boot
+3) Spring Security + JWT
+4) PostgreSQL
+5) REST APIs (MVC)
+
+## Required Dependencies
+
+Java JDK 17 or higher
+
+Postgres DB
+
+Create a db called spam_detection in postgres (or any other name you prefer)
+
+Note: Please Note the App Resets the data that is loaded everytime auto-ddl is to set to create-drop, so it drops and creates tables on every startup (Useful for testing)
+
+## Running the Application
+
+  To run the application from the generated JAR file, follow these steps:
+   1) Create a db called spam_detection in postgres (or any other name you prefer, replace the db_name in cmd)
+	2) Unzip and open the folder in terminal
+	3) cd .\truID\
+	4) Run the Following command by changing the required values
+
+   Note: Please Note the App Resets the data that is loaded everytime auto-ddl is to set to create-drop, so it drops and creates tables on every startup (Useful for testing) 
+
+   java -jar target/spam-detection-0.0.1-SNAPSHOT.jar --spring.datasource.username={username} --spring.datasource.password={password} --spring.datasource.url=jdbc:postgresql://localhost:5432/{db_name}
+
+   Eg : java -jar target/spam-detection-0.0.1-SNAPSHOT.jar --spring.datasource.username=postgres --spring.datasource.password=postgres --spring.datasource.url=jdbc:postgresql://localhost:5432/spam_detection
+
+   4) Please make you sure you change the db username, password and db_name if you have them configured differently
+	4) The Application will Start
+
+## Viewing the ER Diagram
+
+  To view the ER (Entity-Relationship) diagram, open the ER_DIAGRAM.png file located in the project directory. You can open this file in any image viewer.
+
+## Using the REST APIs Collection and Env
+
+   To use the REST APIs, Import the Collection and Env file in Postman, Visit the description section for more API description. Execute the Requests in sequence to see the happy Path Flow
+
+   Collection file: TruID-Collection
+   Collection ENV file: dev-truId.postman_environment.json
+
+   Note: The Generated API keys will be set in the env through scripts if the requests are executed properly.
+
+## Viewing the DB Design, Schema, Perf and Security related details
+
+  To view the DB Design Documentation and other related information, open the pdf file located in the project directory. You can open this file in any image viewer.
+
+
+## API DESCRIPTION
+
+1) Register New User - Creates New User, responds with jwt token
+2) Login - Validates Provided UserName (Phone Number) and Password, responds with jwt Token
+3) Search Contact - Paginated API: (requires auth-jwt)
+   By Phone Number:
+   1) Unregistered Numbers: Provides List of duplicated names, since multiple people might have stored the same number in multiple ways. If asked for Unregistered phone number, provides list of all available contacts with their names
+   
+   2) Registered Number(i.e : Available in User table) : Provides the Registered Number and its details
+
+   By Name: Provides Search Results with Matching Strings, sorts the result by matching criteria i.e : Results first shows people whose names start with the search query, and then people whose names contain but don’t start with the search query.
+
+4) Report Spam: Updates the spam table
+   1) New Spam Entry: Validates Phone Number in Global Contact table and creates new entry in Spam table
+   2) Exisiting Entry: Checks for spam recordCount, if it reaches the threshold, Updates the Spam Details in Spam Table as well as in Global Contact Table
+
+## Design and Important Attributes:
+
+### User Table:
+
+   #### Attributes:
+   id (Primary Key) : Auto generated
+   name : Name of the user
+   phoneNumber (UniqueKey) : Phone number of the user
+   password : Encrypted
+   email : Email of the User (Optional)
+
+   #### Usage:
+   This table helps in registering new users into the application
+   Helps Authenticating all the APIs, except for auth related apis
+
+
+### Global Contacts Table:
+   Description: This table contains personal contacts of the all the users who have registered for the application. This can have Duplicated Data. Person 'A' and 'B' can have same person's mobile number, but they may be saved it in a different way.
+   
+   #### Attributes:
+   id (Primary Key) : Auto generated
+   name : Name of the user
+   phoneNumber (UniqueKey) : Phone number of the user
+   email : Email of the User
+   createdAt/updatedAt- time of creation and updation
+   spamStatus: Current Spam Status of the number
+   N - Not a Spam
+   L - Low probability of a Spam
+   M - Medium probility of a Spam
+   H - High probability of a Spam
+
+   #### Usage:
+   Used to perform Search Queries by Phone Number and Name.
+
+
+### Spam Table:
+   Description: This Table contains details like spam count, spam status and the respective phone number
+   
+   #### Attributes:
+   id (Primary Key) : Auto generated
+   phoneNumber (UniqueKey) : Phone number of the user
+   createdAt/updatedAt- time of creation and updation
+   spamStatus: Current Spam Status of the number
+   N - Not a Spam
+   L - Low probability of a Spam
+   M - Medium probility of a Spam
+   H - High probability of a Spam
+
+   recordCount: Records counts of how people have reported on that number
+   Range 0 - 10 Spam Status : N
+   Range 10 - 24 Spam Status : L (Low)
+   Range 25 - 50 Spam Status : M (Medium)
+   Range 50+ Spam Status : H (High)
+
+
+   #### Usage:
+   Helps in updating the spam recorded count
+   Helps in keeping Global Contact List In Sync with spam status
+
+
+
+
+
+
+
+
